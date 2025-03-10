@@ -3,11 +3,12 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-import { Send, User, Sparkles, AlertCircle } from "lucide-react";
+import { Send, User, Sparkles, AlertCircle, Plus } from "lucide-react";
 import { createClient } from "../../supabase/client";
 import TokenDisplay from "./token-display";
 import Link from "next/link";
 import { FREE_PROMPTS_LIMIT } from "@/types/tokens";
+import { useRouter, useSearchParams } from "next/navigation";
 
 type Message = {
   id: string;
@@ -31,8 +32,13 @@ export default function ChatInterface() {
   const [freePromptsRemaining, setFreePromptsRemaining] = useState<
     number | null
   >(null);
+  const [conversationId, setConversationId] = useState<string | null>(null);
+  const [conversationTitle, setConversationTitle] =
+    useState<string>("New Conversation");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const supabase = createClient();
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   const suggestedQuestions: SuggestedQuestion[] = [
     { id: "q1", text: "How do I know if they're interested in me?" },
@@ -40,6 +46,113 @@ export default function ChatInterface() {
     { id: "q3", text: "How do I communicate my relationship goals?" },
     { id: "q4", text: "When should I bring up exclusivity?" },
   ];
+
+  useEffect(() => {
+    // Get conversation ID from URL if present
+    const conversationParam = searchParams.get("conversation");
+    if (conversationParam) {
+      setConversationId(conversationParam);
+      loadConversation(conversationParam);
+    } else {
+      // If no conversation ID, create a new one
+      createNewConversation();
+    }
+  }, [searchParams]);
+
+  const loadConversation = async (id: string) => {
+    try {
+      // First get the conversation details
+      const { data: conversationData, error: conversationError } =
+        await supabase
+          .from("chat_conversations")
+          .select("*")
+          .eq("id", id)
+          .single();
+
+      if (conversationError) throw conversationError;
+      if (!conversationData) {
+        // If conversation doesn't exist, create a new one
+        createNewConversation();
+        return;
+      }
+
+      setConversationTitle(conversationData.title);
+
+      // Then get all messages for this conversation
+      const { data: messagesData, error: messagesError } = await supabase
+        .from("chat_messages")
+        .select("*")
+        .eq("conversation_id", id)
+        .order("timestamp", { ascending: true });
+
+      if (messagesError) throw messagesError;
+
+      if (messagesData && messagesData.length > 0) {
+        const formattedMessages = messagesData.map((msg) => ({
+          id: msg.id,
+          content: msg.content,
+          sender: msg.sender as "user" | "ai",
+          timestamp: new Date(msg.timestamp),
+        }));
+        setMessages(formattedMessages);
+      } else {
+        // If no messages, add welcome message
+        setMessages([
+          {
+            id: "welcome",
+            content:
+              "Hey hey! Robbie Brito here. How can I help you with your relationship journey today?",
+            sender: "ai",
+            timestamp: new Date(),
+          },
+        ]);
+      }
+    } catch (error) {
+      console.error("Error loading conversation:", error);
+      // If there's an error, start a new conversation
+      createNewConversation();
+    }
+  };
+
+  const createNewConversation = async () => {
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const newId = crypto.randomUUID();
+      const now = new Date().toISOString();
+
+      // Create a new conversation in the database
+      const { error } = await supabase.from("chat_conversations").insert({
+        id: newId,
+        user_id: user.id,
+        title: "New Conversation",
+        created_at: now,
+        updated_at: now,
+      });
+
+      if (error) throw error;
+
+      setConversationId(newId);
+      setConversationTitle("New Conversation");
+      setMessages([
+        {
+          id: "welcome",
+          content:
+            "Hey hey! Robbie Brito here. How can I help you with your relationship journey today?",
+          sender: "ai",
+          timestamp: new Date(),
+        },
+      ]);
+
+      // Update URL without refreshing the page
+      router.replace(`/dashboard/chat?conversation=${newId}`);
+    } catch (error) {
+      console.error("Error creating new conversation:", error);
+    }
+  };
 
   useEffect(() => {
     // Check user authentication and token status
@@ -85,19 +198,6 @@ export default function ChatInterface() {
 
     checkUserAndTokens();
 
-    // Add welcome message when component mounts
-    if (messages.length === 0) {
-      setMessages([
-        {
-          id: "welcome",
-          content:
-            "Hey hey! Robbie Brito here. How can I help you with your relationship journey today?",
-          sender: "ai",
-          timestamp: new Date(),
-        },
-      ]);
-    }
-
     // Subscribe to token changes
     const subscription = supabase
       .channel("tokens-changes")
@@ -141,11 +241,45 @@ export default function ChatInterface() {
       )
       .subscribe();
 
+    // Subscribe to chat messages for this conversation
+    const chatMessagesSubscription = supabase
+      .channel("chat-messages")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "chat_messages",
+          filter: conversationId
+            ? `conversation_id=eq.${conversationId}`
+            : undefined,
+        },
+        (payload) => {
+          if (payload.new && payload.new.conversation_id === conversationId) {
+            const newMessage = {
+              id: payload.new.id,
+              content: payload.new.content,
+              sender: payload.new.sender as "user" | "ai",
+              timestamp: new Date(payload.new.timestamp),
+            };
+            // Only add the message if it's not already in the list
+            setMessages((prev) => {
+              if (!prev.some((msg) => msg.id === newMessage.id)) {
+                return [...prev, newMessage];
+              }
+              return prev;
+            });
+          }
+        },
+      )
+      .subscribe();
+
     return () => {
       subscription.unsubscribe();
       transactionSubscription.unsubscribe();
+      chatMessagesSubscription.unsubscribe();
     };
-  }, [supabase]);
+  }, [supabase, conversationId]);
 
   useEffect(() => {
     scrollToBottom();
@@ -155,8 +289,33 @@ export default function ChatInterface() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  const updateConversationTitle = async (content: string) => {
+    if (!conversationId || !userId || conversationTitle !== "New Conversation")
+      return;
+
+    // Use the first user message as the conversation title (truncated if needed)
+    const newTitle =
+      content.length > 30 ? `${content.substring(0, 30)}...` : content;
+
+    try {
+      const { error } = await supabase
+        .from("chat_conversations")
+        .update({
+          title: newTitle,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", conversationId);
+
+      if (error) throw error;
+      setConversationTitle(newTitle);
+    } catch (error) {
+      console.error("Error updating conversation title:", error);
+    }
+  };
+
   const handleSendMessage = async (content: string) => {
-    if (!content.trim() || !userId || !canSendMessage) return;
+    if (!content.trim() || !userId || !canSendMessage || !conversationId)
+      return;
 
     // Add user message
     const userMessage: Message = {
@@ -170,45 +329,126 @@ export default function ChatInterface() {
     setInputValue("");
     setIsLoading(true);
 
+    // Update conversation title if it's the first user message
+    updateConversationTitle(content);
+
     // Immediately update the UI to show one less credit
     if (freePromptsRemaining !== null && freePromptsRemaining > 0) {
       setFreePromptsRemaining((prev) => Math.max(0, prev - 1));
     }
 
     try {
+      // Save user message to database
+      const { error: messageError } = await supabase
+        .from("chat_messages")
+        .insert({
+          id: userMessage.id,
+          conversation_id: conversationId,
+          content: userMessage.content,
+          sender: userMessage.sender,
+          timestamp: userMessage.timestamp.toISOString(),
+        });
+
+      if (messageError) throw messageError;
+
+      // Update conversation timestamp
+      const { error: conversationError } = await supabase
+        .from("chat_conversations")
+        .update({ updated_at: new Date().toISOString() })
+        .eq("id", conversationId);
+
+      if (conversationError) throw conversationError;
+
       // Record token usage
-      const { data } = await supabase.functions.invoke(
-        "update-tokens-on-message",
-        {
-          body: { user_id: userId },
-        },
-      );
+      try {
+        const { data } = await supabase.functions.invoke(
+          "update-tokens-on-message",
+          {
+            body: { user_id: userId },
+            headers: {
+              "Content-Type": "application/json",
+              "x-custom-header": "value",
+            },
+          },
+        );
 
-      // Update local state based on response
-      if (data?.freePrompt !== undefined) {
-        setFreePromptsRemaining(data.remainingFree);
+        // Update local state based on response
+        if (data?.freePrompt !== undefined) {
+          setFreePromptsRemaining(data.remainingFree);
+        }
+
+        if (
+          data?.tokenBalance !== undefined &&
+          data.tokenBalance === 0 &&
+          data.freePrompt === false
+        ) {
+          setCanSendMessage(false);
+          setNeedsTokens(true);
+        }
+      } catch (tokenError) {
+        console.error("Token usage error:", tokenError);
+        // Check if the error is about insufficient tokens
+        if (
+          tokenError.message?.includes("402") ||
+          tokenError.message?.includes("Insufficient")
+        ) {
+          setCanSendMessage(false);
+          setNeedsTokens(true);
+          throw new Error("Insufficient tokens");
+        }
       }
 
-      if (
-        data?.tokenBalance !== undefined &&
-        data.tokenBalance === 0 &&
-        data.freePrompt === false
-      ) {
-        setCanSendMessage(false);
-        setNeedsTokens(true);
-      }
+      // Get AI response from the API
+      try {
+        // Skip debug test in production to avoid unnecessary API calls
+        if (process.env.NODE_ENV === "development") {
+          try {
+            const debugResponse = await fetch("/api/debug-openai");
+            const debugData = await debugResponse.json();
+            console.log("OpenAI Debug:", debugData);
+          } catch (debugError) {
+            console.warn("Debug test failed, continuing anyway:", debugError);
+          }
+        }
 
-      // Simulate AI response after delay
-      setTimeout(() => {
+        // Get AI response
+        const aiResponseContent = await getAIResponse(content);
+
         const aiResponse: Message = {
           id: (Date.now() + 1).toString(),
-          content: getAIResponse(content),
+          content: aiResponseContent,
           sender: "ai",
           timestamp: new Date(),
         };
+
         setMessages((prev) => [...prev, aiResponse]);
         setIsLoading(false);
-      }, 1500);
+
+        // Save AI response to database
+        await supabase.from("chat_messages").insert({
+          id: aiResponse.id,
+          conversation_id: conversationId,
+          content: aiResponse.content,
+          sender: aiResponse.sender,
+          timestamp: aiResponse.timestamp.toISOString(),
+        });
+      } catch (error) {
+        console.error("Error processing AI response:", error);
+        setIsLoading(false);
+
+        // Show error message to user with more details in development
+        const errorMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          content:
+            process.env.NODE_ENV === "development"
+              ? `I'm sorry, I'm having trouble connecting right now. Error: ${error.message}`
+              : "I'm sorry, I'm having trouble connecting right now. Please try again in a moment.",
+          sender: "ai",
+          timestamp: new Date(),
+        };
+
+        setMessages((prev) => [...prev, errorMessage]);
+      }
     } catch (error) {
       console.error("Error processing message:", error);
       setIsLoading(false);
@@ -226,18 +466,51 @@ export default function ChatInterface() {
     }
   };
 
-  // Placeholder function to simulate AI responses
-  const getAIResponse = (userMessage: string): string => {
-    const responses = [
-      "Based on my experience, the key to a successful relationship is clear communication about your expectations and boundaries.",
-      "I'd recommend focusing on building a strong emotional connection before discussing long-term commitment.",
-      "It sounds like you might be at a crossroads in your relationship. Consider having an honest conversation about where you both see things going.",
-      "Remember that healthy relationships require both partners to be equally invested. Are you feeling balanced in your current situation?",
-      "Dating with intention means being clear about what you want. Have you shared your relationship goals with them?",
-      "Sometimes the timing isn't right, even when the person seems perfect. Be patient with the process.",
-      "Building a lasting relationship takes time and consistent effort from both people involved.",
-    ];
-    return responses[Math.floor(Math.random() * responses.length)];
+  // Get AI response from the API using the Assistants API
+  const getAIResponse = async (userMessage: string): Promise<string> => {
+    try {
+      if (!conversationId) {
+        throw new Error("No conversation ID available");
+      }
+
+      // Check if user has tokens before making the API call
+      if (needsTokens) {
+        throw new Error("Insufficient tokens");
+      }
+
+      // Get the conversation history to provide context
+      const conversationHistory = messages
+        .filter((msg) => msg.id !== "welcome") // Filter out the welcome message
+        .slice(-10); // Only use the last 10 messages for context
+
+      // Use absolute URL to avoid CORS issues
+      const apiUrl = window.location.origin + "/api/chat";
+      console.log("Using API URL:", apiUrl);
+
+      const response = await fetch(apiUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          message: userMessage,
+          conversationId,
+          conversationHistory,
+        }),
+        credentials: "same-origin",
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to get AI response");
+      }
+
+      const data = await response.json();
+      return data.response;
+    } catch (error) {
+      console.error("Error getting AI response:", error);
+      return "I'm sorry, I'm having trouble connecting right now. Please try again in a moment.";
+    }
   };
 
   return (
@@ -250,6 +523,15 @@ export default function ChatInterface() {
         </div>
         <div className="flex items-center gap-3">
           {userId && <TokenDisplay />}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-white hover:bg-blue-700 px-3 py-1 rounded-md transition-colors flex items-center gap-1"
+            onClick={createNewConversation}
+          >
+            <Plus className="h-4 w-4" />
+            <span className="hidden sm:inline">New Chat</span>
+          </Button>
           <Link
             href="/dashboard/history"
             className="text-sm bg-blue-700 hover:bg-blue-600 px-3 py-1 rounded-md transition-colors"

@@ -32,6 +32,8 @@ export const signUpAction = async (formData: FormData) => {
         full_name: fullName,
         email: email,
       },
+      // Auto-confirm the email
+      autoConfirm: true,
     },
   });
 
@@ -58,8 +60,8 @@ export const signUpAction = async (formData: FormData) => {
     }
   }
 
-  // Redirect to email confirmation page instead of showing a message on the sign-up page
-  return redirect("/email-confirmation");
+  // Skip email confirmation and redirect directly to dashboard
+  return redirect("/dashboard");
 };
 
 export const resendConfirmationEmail = async (formData: FormData) => {

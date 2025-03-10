@@ -100,13 +100,6 @@ export default function TokenDisplay() {
         <span className="font-medium">{tokenBalance}</span>
         <span className="text-xs">tokens</span>
       </div>
-
-      {freePromptsRemaining > 0 && (
-        <div className="text-xs bg-green-50 text-green-700 px-2 py-1 rounded-md">
-          <span className="font-medium">{freePromptsRemaining}</span> free{" "}
-          {freePromptsRemaining === 1 ? "credit" : "credits"} left
-        </div>
-      )}
     </div>
   );
 }

@@ -3,8 +3,9 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
   "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+    "authorization, x-client-info, apikey, content-type, x-supabase-client, x-custom-header",
 };
 
 const FREE_PROMPTS_LIMIT = 3;
@@ -118,7 +119,18 @@ serve(async (req) => {
 
     // Check if user has enough tokens
     if (tokenData.balance < TOKENS_PER_PROMPT) {
-      throw new Error("User has insufficient tokens");
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "Insufficient tokens",
+          freePrompt: false,
+          tokenBalance: tokenData.balance,
+        }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 402,
+        },
+      );
     }
 
     // Use tokens
@@ -157,9 +169,15 @@ serve(async (req) => {
       },
     );
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 400,
-    });
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: error.message,
+      }),
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400,
+      },
+    );
   }
 });

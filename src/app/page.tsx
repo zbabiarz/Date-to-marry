@@ -9,8 +9,6 @@ import {
   Sparkles,
   ShieldCheck,
 } from "lucide-react";
-import Link from "next/link";
-import Image from "next/image";
 
 export default async function Home() {
   const supabase = await createClient();
@@ -48,20 +46,20 @@ export default async function Home() {
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                <Link
+                <a
                   href={user ? "/dashboard" : "/sign-up"}
                   className="inline-flex items-center px-8 py-4 text-white bg-blue-800 rounded-lg hover:bg-blue-900 transition-colors text-lg font-medium"
                 >
                   Start Your Journey
                   <ArrowUpRight className="ml-2 w-5 h-5" />
-                </Link>
+                </a>
 
-                <Link
+                <a
                   href="#pricing"
                   className="inline-flex items-center px-8 py-4 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors text-lg font-medium"
                 >
                   View Pricing
-                </Link>
+                </a>
               </div>
             </div>
           </div>
@@ -204,16 +202,285 @@ export default async function Home() {
       <section className="py-24 bg-gray-50" id="pricing">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold mb-4">Choose Your Plan</h2>
+            <h2 className="text-3xl font-bold mb-4">Token Packages</h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
-              Invest in your relationship future with our affordable
-              subscription options
+              Purchase tokens to chat with your AI Dating Advisor
             </p>
           </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            {plans?.map((item: any) => (
-              <PricingCard key={item.id} item={item} user={user} />
-            ))}
+          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden relative">
+              {/* Basic Package */}
+              <div className="p-6">
+                <h3 className="text-xl font-bold mb-2">Starter</h3>
+                <div className="text-3xl font-bold mb-1">$10</div>
+                <div className="flex items-center gap-1 mb-4">
+                  <span className="text-blue-800 font-semibold">100</span>
+                  <span className="text-gray-500">tokens</span>
+                </div>
+                <ul className="space-y-2 mb-6">
+                  <li className="flex items-start gap-2">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5 text-green-500 mt-0.5"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    <span className="text-sm">100 AI responses</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5 text-green-500 mt-0.5"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    <span className="text-sm">10¢ per token</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5 text-green-500 mt-0.5"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    <span className="text-sm">Tokens never expire</span>
+                  </li>
+                </ul>
+                <a
+                  href={user ? "/dashboard/tokens" : "/sign-up"}
+                  className="block w-full py-3 px-4 bg-blue-800 hover:bg-blue-900 text-white text-center font-medium rounded-lg transition-colors"
+                >
+                  Get Started
+                </a>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl shadow-lg border-2 border-blue-500 overflow-hidden relative transform scale-105">
+              {/* Popular Package */}
+              <div className="absolute top-0 right-0 bg-blue-500 text-white px-3 py-1 text-xs font-medium">
+                Best Value
+              </div>
+              <div className="p-6">
+                <h3 className="text-xl font-bold mb-2">Popular</h3>
+                <div className="text-3xl font-bold mb-1">$25</div>
+                <div className="flex items-center gap-1 mb-4">
+                  <span className="text-blue-800 font-semibold">300</span>
+                  <span className="text-gray-500">tokens</span>
+                </div>
+                <ul className="space-y-2 mb-6">
+                  <li className="flex items-start gap-2">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5 text-green-500 mt-0.5"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    <span className="text-sm">300 AI responses</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5 text-green-500 mt-0.5"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    <span className="text-sm">8.3¢ per token</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5 text-green-500 mt-0.5"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    <span className="text-sm">20% savings</span>
+                  </li>
+                </ul>
+                <a
+                  href={user ? "/dashboard/tokens" : "/sign-up"}
+                  className="block w-full py-3 px-4 bg-blue-800 hover:bg-blue-900 text-white text-center font-medium rounded-lg transition-colors"
+                >
+                  Get Started
+                </a>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden relative">
+              {/* Premium Package */}
+              <div className="p-6">
+                <h3 className="text-xl font-bold mb-2">Premium</h3>
+                <div className="text-3xl font-bold mb-1">$75</div>
+                <div className="flex items-center gap-1 mb-4">
+                  <span className="text-blue-800 font-semibold">1000</span>
+                  <span className="text-gray-500">tokens</span>
+                </div>
+                <ul className="space-y-2 mb-6">
+                  <li className="flex items-start gap-2">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5 text-green-500 mt-0.5"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    <span className="text-sm">1000 AI responses</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5 text-green-500 mt-0.5"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    <span className="text-sm">7.5¢ per token</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5 text-green-500 mt-0.5"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    <span className="text-sm">25% savings</span>
+                  </li>
+                </ul>
+                <a
+                  href={user ? "/dashboard/tokens" : "/sign-up"}
+                  className="block w-full py-3 px-4 bg-blue-800 hover:bg-blue-900 text-white text-center font-medium rounded-lg transition-colors"
+                >
+                  Get Started
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-12 max-w-3xl mx-auto bg-blue-50 p-6 rounded-xl border border-blue-100">
+            <h3 className="text-lg font-semibold mb-3 text-blue-800">
+              How tokens work:
+            </h3>
+            <div className="grid md:grid-cols-2 gap-6">
+              <div>
+                <ul className="space-y-3">
+                  <li className="flex items-start gap-2">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5 text-blue-800 mt-0.5"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    <span>New users get 3 free credits to try the service</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5 text-blue-800 mt-0.5"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    <span>Each message to the AI costs 1 token</span>
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <ul className="space-y-3">
+                  <li className="flex items-start gap-2">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5 text-blue-800 mt-0.5"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    <span>Tokens never expire</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5 text-blue-800 mt-0.5"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    <span>Get 10 tokens for every $1 spent</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -228,13 +495,13 @@ export default async function Home() {
             Join thousands who have found meaningful relationships with Robbie
             Brito's expert guidance.
           </p>
-          <Link
+          <a
             href={user ? "/dashboard" : "/sign-up"}
             className="inline-flex items-center px-8 py-4 text-blue-800 bg-white rounded-lg hover:bg-gray-100 transition-colors text-lg font-medium"
           >
             Start Now
             <ArrowUpRight className="ml-2 w-5 h-5" />
-          </Link>
+          </a>
         </div>
       </section>
 
