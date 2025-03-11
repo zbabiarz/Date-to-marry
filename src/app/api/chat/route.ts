@@ -141,7 +141,18 @@ export async function POST(request: NextRequest) {
       // Create a new thread
       const thread = await openai.beta.threads.create();
 
-      // Add the user message to the thread
+      // Add conversation history to the thread if provided
+      if (conversationHistory && conversationHistory.length > 0) {
+        // Add previous messages to provide context
+        for (const msg of conversationHistory) {
+          await openai.beta.threads.messages.create(thread.id, {
+            role: msg.role === "user" ? "user" : "assistant",
+            content: msg.content,
+          });
+        }
+      }
+
+      // Add the current user message to the thread
       await openai.beta.threads.messages.create(thread.id, {
         role: "user",
         content: message,
@@ -205,12 +216,30 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      // Clean up the response by removing transcription references
+      // Clean up the response by removing transcription references, sources, and formatting issues
       responseText = responseText
-        .replace(/\[\d+:\d+\*Transcribed video\.txt\]/g, "")
-        .replace(/\[\d+:\d+\+Transcribed video\.txt\]/g, "")
-        .replace(/\s+\[\d+:\d+\*Transcribed video\.txt\]\s+/g, " ")
-        .replace(/\s+\[\d+:\d+\+Transcribed video\.txt\]\s+/g, " ");
+        // Remove all source references with various formats
+        .replace(/\[\d+:\d+\*?\+?[a-zA-Z0-9\s\.]+\]/g, "")
+        .replace(/\s*\[\d+:\d+\*?\+?[a-zA-Z0-9\s\.]+\]\s*/g, " ")
+        // Remove asterisks used for emphasis
+        .replace(/\*\*/g, "")
+        // Add paragraph breaks after sentences that end a thought
+        .replace(/\. (?=[A-Z][a-z]+ [a-z])/g, ".\n\n")
+        // Ensure numbered points and bullet points have proper spacing
+        .replace(/(\.\s|\?\s|\!\s)(\d+\.) /g, "$1\n\n$2 ")
+        .replace(/(\.\s|\?\s|\!\s)(\*|\-|•) /g, "$1\n\n$2 ")
+        // Handle lists with proper spacing
+        .replace(/\n([•\-\*])/g, "\n\n$1")
+        // Clean up any excessive whitespace
+        .replace(/\s{2,}/g, " ")
+        .replace(/\n{3,}/g, "\n\n")
+        // Ensure proper spacing around question marks and exclamation points
+        .replace(/\?(?=[A-Z])/g, "?\n\n")
+        .replace(/\!(?=[A-Z])/g, "!\n\n")
+        // Add spacing after section headers (all caps followed by colon)
+        .replace(/([A-Z]{2,}:)/g, "\n\n$1\n\n")
+        // Final cleanup
+        .trim();
 
       return NextResponse.json(
         {

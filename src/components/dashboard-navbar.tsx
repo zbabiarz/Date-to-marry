@@ -16,6 +16,7 @@ import {
   MessageCircle,
   Settings,
   Coins,
+  Calendar,
 } from "lucide-react";
 import { useRouter, usePathname } from "next/navigation";
 
@@ -36,6 +37,15 @@ export default function DashboardNavbar() {
           </Link>
         </div>
         <div className="flex gap-6 items-center">
+          <a
+            href="https://calendly.com/robbieblove/coaching"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1 text-sm font-medium text-white bg-rose-600 px-3 py-1.5 rounded-md hover:bg-rose-700"
+          >
+            <Calendar className="h-4 w-4" />
+            <span>Book a Call</span>
+          </a>
           <Link
             href="/dashboard"
             className={`flex items-center gap-1 text-sm font-medium ${pathname === "/dashboard" ? "text-blue-800" : "text-gray-600 hover:text-blue-800"}`}

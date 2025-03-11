@@ -139,7 +139,12 @@ export default function Footer() {
               <span className="sr-only">Twitter</span>
               <Twitter className="h-6 w-6" />
             </a>
-            <a href="#" className="text-gray-400 hover:text-blue-800">
+            <a
+              href="https://www.instagram.com/robbieblove/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-400 hover:text-blue-800"
+            >
               <span className="sr-only">Instagram</span>
               <Instagram className="h-6 w-6" />
             </a>

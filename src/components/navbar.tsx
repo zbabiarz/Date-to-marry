@@ -41,6 +41,14 @@ export default async function Navbar() {
           </Link>
         </div>
         <div className="flex gap-4 items-center">
+          <a
+            href="https://calendly.com/robbieblove/coaching"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-4 py-2 text-sm font-medium text-white bg-rose-600 rounded-md hover:bg-rose-700 flex items-center gap-1"
+          >
+            <span>Book a Call</span>
+          </a>
           {user ? (
             <>
               <Link

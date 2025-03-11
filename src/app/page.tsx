@@ -31,35 +31,46 @@ export default async function Home() {
 
         <div className="relative pt-24 pb-32 sm:pt-32 sm:pb-40">
           <div className="container mx-auto px-4">
-            <div className="text-center max-w-4xl mx-auto">
-              <h1 className="text-5xl sm:text-6xl font-bold text-gray-900 mb-8 tracking-tight">
-                Your Personal
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-800 to-rose-700 mx-2">
-                  Dating Advisor
-                </span>
-                by Robbie Brito
-              </h1>
+            <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+              <div className="text-center md:text-left max-w-2xl mx-auto md:mx-0">
+                <h1 className="text-5xl sm:text-6xl font-bold text-gray-900 mb-8 tracking-tight">
+                  Your Personal
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-800 to-rose-700 mx-2">
+                    Dating Advisor
+                  </span>
+                  by Robbie Brito
+                </h1>
 
-              <p className="text-xl text-gray-600 mb-12 max-w-2xl mx-auto leading-relaxed">
-                Navigate your relationships toward meaningful commitment with
-                personalized advice from AI trained on Robbie Brito's expertise.
-              </p>
+                <p className="text-xl text-gray-600 mb-12 max-w-2xl mx-auto md:mx-0 leading-relaxed">
+                  Navigate your relationships toward meaningful commitment with
+                  personalized advice from AI trained on Robbie Brito's
+                  expertise.
+                </p>
 
-              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                <a
-                  href={user ? "/dashboard" : "/sign-up"}
-                  className="inline-flex items-center px-8 py-4 text-white bg-blue-800 rounded-lg hover:bg-blue-900 transition-colors text-lg font-medium"
-                >
-                  Start Your Journey
-                  <ArrowUpRight className="ml-2 w-5 h-5" />
-                </a>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start items-center">
+                  <a
+                    href={user ? "/dashboard" : "/sign-up"}
+                    className="inline-flex items-center px-8 py-4 text-white bg-blue-800 rounded-lg hover:bg-blue-900 transition-colors text-lg font-medium"
+                  >
+                    Start Your Journey
+                    <ArrowUpRight className="ml-2 w-5 h-5" />
+                  </a>
 
-                <a
-                  href="#pricing"
-                  className="inline-flex items-center px-8 py-4 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors text-lg font-medium"
-                >
-                  View Pricing
-                </a>
+                  <a
+                    href="#pricing"
+                    className="inline-flex items-center px-8 py-4 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors text-lg font-medium"
+                  >
+                    View Pricing
+                  </a>
+                </div>
+              </div>
+
+              <div className="mt-8 md:mt-0 max-w-md">
+                <img
+                  src="https://storage.googleapis.com/msgsndr/NTKUB2advX9PS13kiwao/media/67ce5eb0c6d47cc65cd57fb4.png"
+                  alt="Date To Marry Hero Image"
+                  className="rounded-lg shadow-lg w-full h-auto"
+                />
               </div>
             </div>
           </div>
